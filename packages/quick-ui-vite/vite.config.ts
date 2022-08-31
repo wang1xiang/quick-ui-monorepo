@@ -4,6 +4,7 @@ import vueJsx from "@vitejs/plugin-vue-jsx";
 import vue from "@vitejs/plugin-vue";
 import Unocss from "./config/unocss";
 import { UserConfig } from "vite";
+import copy from 'rollup-plugin-copy';
 
 const rollupOptions = {
   external: ["vue", "vue-router"],
@@ -22,7 +23,14 @@ export const config = {
       // options are passed on to @vue/babel-plugin-jsx
     }) as Plugin,
     // 添加UnoCSS插件
-    Unocss() as Plugin[]
+    Unocss() as Plugin[],
+    copy({
+      targets: [
+        { src: "package.json", dest: "dist" },
+        { src: "README.md", dest: "dist" },
+      ],
+      hook: "writeBundle",
+    }),
   ],
   // 添加库模式配置
   build: {
