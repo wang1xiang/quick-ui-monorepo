@@ -38,10 +38,10 @@ export const props = {
 export default defineComponent({
   name: "SButton",
   props,
-  setup(props, { slots }) {
+  setup(props) {
     console.log(`html`, document.querySelector(`#app`)?.innerHTML);
-
-    const size = {
+    const { color, size, ...args  } = props;
+    const fontSize = {
       small: {
         x: "2",
         y: "1",
@@ -60,30 +60,20 @@ export default defineComponent({
     };
 
     return () => (
-      <button
+      <input
         class={`
-        py-${size[props.size].y}
-        px-${size[props.size].x}
-        ${props.round ? "rounded-full" : "rounded-lg"}
         bg-${props.color}-${props.plain ? "100" : "500"}
         hover:bg-${props.color}-400
         border-${props.color}-${props.plain ? "500" : "500"}
-        cursor-pointer
         border-solid
         text-${props.plain ? props.color + "-500" : "white"}
-        text-${size[props.size].text}
+        text-${fontSize[size].text}
         hover:text-white
         transition duration-300 ease-in-out transform hover:scale-105
         mx-1
       `}
-      >
-        {props.icon !== "" ? (
-          <i class={`i-ic-baseline-${props.icon} p-3`}></i>
-        ) : (
-          ""
-        )}
-        {slots.default ? slots.default() : ""}
-      </button>
+       {...args}
+      />
     );
   },
 });

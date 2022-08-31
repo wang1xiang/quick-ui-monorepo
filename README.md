@@ -92,3 +92,74 @@
 
    - 编辑index.html测试
    - 在scripts中添加dev脚本，pnpm dev启动测试
+
+### 实现组件库的按需引入
+
+两种方法：
+
+1. 经典方法：组件单独分包 + 按需导入 + babel-plugin-component(自动化按需引入)
+2. 次时代方法：ESModule + TreeShaking + 自动按需import(unplugin-vue-components自动化配置)
+
+#### 分包与摇树（TreeShaking)
+
+TreeShaking通过语法分析去除无用代码，Roolup、Vite合新版本webpack都支持，例如组件库之引入了Button
+
+```js
+import { Button } from 'quick-ui-vite';
+```
+
+编辑器会自动将其他组件代码去掉
+
+#### 实现分包导出
+
+分包导出相当于将组件库形成无数个子软件包，并满足以下要求：
+
+1. 文件名即组件名
+2. 独立的package.json定义，包含esm和umd的入口定义
+3. 每个组件必须以Vue插件形式进行加载
+4. 每个软件包必须有单独的css导出
+  
+![分包导出](./images/1661916687017.jpg)
+
+#### 代码重构
+
+1. 复制一份原有的button文件夹进行修改
+2. 修改index.ts，默认导出vue插件
+
+   ```ts
+    import Button from "./Button";
+    import { App } from "vue";
+    // 导出Button组件
+    export { Button };
+    // 导出Vue插件
+    export default {
+      install(app: App) {
+        app.component(Button.name, Button);
+      },
+    };
+
+   ```
+
+3. 编写分包导出脚本 scripts/build.ts
+   默认导出方式通过vite.config.js的build属性配置，分包时需要为每个组件配置自己的配置文件，自动读取文件夹遍历打包，并复制package.json文件
+  
+   1. 导入vite.config中的配置，使用vite的build方法进行全量打包
+   2. 读取文件夹 遍历组件库文件夹
+   3. 为每个模块定制不同的编译规则，编译规则如下
+      - 导出文件夹为 dist/ <组件名>/ 例： dist/Button；
+      - 导出模块名为： index.es.js、index.umd.js；
+      - 导出模块名为： <组件名> iffe 中绑定到全局的名字。
+   4. 为子模块定制自己的package.json文件，npm规定，当import子组件包时会根据子包中的package.json文件找到对应的模块
+   5. 在scripts中添加命令
+      node不能直接执行ts文件，需要安装ts-node这个库，esno 是基于 esbuild 的 TS/ESNext node 运行时，和ts-node的区别就是使用esbuild作编译器，快
+
+      ```json
+      "scripts": {
+        ...
+        "build:components": "esno ./scripts/build.ts",
+        ...
+      }
+      ```
+
+   6. 测试按需加载，创建demo/button/index.html测试
+4.

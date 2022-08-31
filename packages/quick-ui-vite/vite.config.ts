@@ -1,26 +1,28 @@
 /// <reference types="vitest" />
-import { defineConfig } from "vite";
+import { defineConfig, Plugin } from "vite";
 import vueJsx from "@vitejs/plugin-vue-jsx";
 import vue from "@vitejs/plugin-vue";
 import Unocss from "./config/unocss";
+import { UserConfig } from "vite";
 
 const rollupOptions = {
   external: ["vue", "vue-router"],
   output: {
+    assetFileNames: "[name].[ext]",
+    exports: "named",
     globals: {
       vue: "Vue",
     },
   },
 };
-
-export default defineConfig({
+export const config = {
   plugins: [
-    vue(), // 添加JSX插件
+    vue() as Plugin, // 添加JSX插件
     vueJsx({
       // options are passed on to @vue/babel-plugin-jsx
-    }),
+    }) as Plugin,
     // 添加UnoCSS插件
-    Unocss()
+    Unocss() as Plugin[]
   ],
   // 添加库模式配置
   build: {
@@ -36,6 +38,7 @@ export default defineConfig({
       // @ts-ignore
       formats: ["esm", "umd", "iife"], // 导出模块类型
     },
+    outDir: "./dist"
   },
   // vitest配置
   test: {
@@ -49,4 +52,5 @@ export default defineConfig({
       web: [/.[tj]sx$/]
     }
   }
-});
+}
+export default defineConfig(config as UserConfig);

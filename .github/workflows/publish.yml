@@ -1,4 +1,4 @@
-name: Publish Test-ui-vite To Npm
+name: Publish Quick-ui-vite To Npm
 
 on:
   push:
@@ -20,7 +20,7 @@ jobs:
       - name: Install modules
         run: pnpm install
       - name: Build
-        run: pnpm run build
+        run: cd packages/quick-ui-vite && npm run build
       - name: "Publish to the npm registry"
         uses: primer/publish@3.0.0
         env:
@@ -28,4 +28,5 @@ jobs:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }} # 跟前面步骤中的 NPM_AUTH_TOKEN 保持一致
         with:
           default_branch: "publish-quick-ui-vite"
-          dir: "quick-ui-vite/dist"
+          dir: "packages/quick-ui-vite/dist"
+          npm_args: "--unsafe-perm --allow-same-version"

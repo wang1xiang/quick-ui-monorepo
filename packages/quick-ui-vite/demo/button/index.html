@@ -1,24 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-
-<body>
-
-    <h1>🔨 QuickUI Demo</h1>
-    <div id="app"></div>
-    <script type="module">
-        import style from "quick-ui-vite/dist/entry.css"
-        import { createApp } from "vue/dist/vue.esm-bundler.js";
-        import QuickUI, { Button as SButton } from "quick-ui-vite/dist/quick-ui.esm.js";
-        console.log(SButton)
-        createApp({
-            template: `
+<h1>Demo IFFE OnDemand</h1>
+<div id="app"></div>
+<link rel="stylesheet" href="../../dist/entry.css">
+<script src="../../node_modules/vue/dist/vue.global.js"></script>
+<script src="../../dist/button/index.iife.js"></script>
+<script>
+  const {
+    createApp
+  } = Vue
+  console.log('vue', Vue)
+  console.log('SmartyUI', Button)
+  createApp({
+      template: `
         <div style="margin-bottom:20px;">
             <SButton color="blue">主要按钮</SButton>
             <SButton color="green">绿色按钮</SButton>
@@ -53,9 +45,8 @@
             <SButton color="yellow" round plain icon="message"></SButton>
             <SButton color="red" round plain icon="delete"></SButton>
         </div>
-    `}).use(QuickUI).mount('#app')
-
-    </script>
-</body>
-
-</html>
+    `
+    })
+    .use(Button.default)
+    .mount('#app')
+</script>
