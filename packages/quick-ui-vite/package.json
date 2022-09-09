@@ -2,7 +2,8 @@
   "name": "quick-ui-vite",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "quick-ui.umd.js",
+  "module": "quick-ui.esm.js",
   "scripts": {
     "dev": "vite",
     "build": "pnpm build:components",

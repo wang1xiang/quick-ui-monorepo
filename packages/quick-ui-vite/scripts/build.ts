@@ -7,10 +7,24 @@ const buildAll = async () => {
   // 1. 导入vite.config中的配置，使用vite的build方法进行全量打包
   await build(defineConfig(config as UserConfig) as InlineConfig);
 
+  const outDistDir = config.build.outDir;
+  // 复制 Package.json 文件
+  const packageJson = require("../package.json");
+  packageJson.main = "quick-ui.umd.js";
+  packageJson.module = "quick-ui.esm.js";
+  fs.outputFile(
+    path.resolve(outDistDir, `package.json`),
+    JSON.stringify(packageJson, null, 2)
+  );
+
+  // 拷贝 README.md文件
+  fs.copyFileSync(
+    path.resolve("./README.md"),
+    path.resolve(outDistDir + "/README.md")
+  );
+
   // 2. 读取文件夹 遍历组件库文件夹
   const srcDir = path.resolve(__dirname, "../src/");
-
-  const outDistDir = config.build.outDir;
   fs.readdirSync(srcDir)
     .filter((name) => {
       // 过滤出文件夹中包含index.ts的文件夹

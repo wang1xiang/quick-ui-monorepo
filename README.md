@@ -163,3 +163,123 @@ import { Button } from 'quick-ui-vite';
 
    6. 测试按需加载，创建demo/button/index.html测试
 4.
+
+### 创建CLI工具提高研发体验
+
+组件库包含两种脚手架工具：
+
+- Create-xxx-ui-app: 创建使用xxx-UI组件库的程序的脚手架
+- Create-xxx-ui: 创建和xxx-UI类似的组件库的脚手架
+
+#### CLI概念(command-line interface命令行界面)
+
+脚手架概念来自于工程，是为了工程顺利进行而搭建的工程平台。在软件开发中，就是帮助开发过程的工具和环境配置的集合。<br />
+
+一个脚手架项目一般包含两部分内容：
+
+1. Template项目：项目的模板
+2. CLI工具项目：提供命令行界面用于克隆项目，生成代码，自动配置，运行调试，发布等功能
+  
+### CLI工具生成步骤
+
+#### 创建模板项目
+
+创建一个程序模板，从零搭建Vue3 + Vite项目并引入Quick-UI <br />
+
+#### 初始化CLI项目
+
+有了模板，还需要创建脚手架<br />
+
+脚手架作用如下：
+
+1. 提供命令行界面：
+   - 填写项目名称
+   - 选择代码模板
+   - 等等
+2. 克隆模板項目
+3. 根据项目名称及其他配置生成代码
+  
+像@vue/cli这类脚手架工具，可以全局运行的关键是将包中的一个js文件注册到全局，让全局名利可以调用到这个js程序 <br />
+
+1. 将CLI工具安装到全局（全局可用的可执行命令），如`npm i @vue/cli -g`，全局模式安装的模块都会被安装到统一目录下，windows在`C:\Users\xiang wang\AppData\Roaming\npm`下，而对应`C:\Users\xiang wang\AppData\Roaming\npm\node_modules`则是所有全局可执行命令对应的js文件<br />
+   ![npmglobal.jpg](./images/npmglobal.jpg)
+   也可以通过`npm get prefix`获取全局目录<br />
+
+2. 根据package.json文件的bin字段，将bin/vue.js文件软连接到全局的可执行目录
+   ![vuecli.jpg](./images/vuecli.jpg)
+   在linux系统中可以更清楚的看到，通过软链接的方式将bin字段配置的可执行文件链接到Node的可执行目录下
+   ![linuxglobal.jpg](./images/linuxglobal.jpg)
+   这个时候就可以全局使用vue了
+
+3. 而在开发过程中，可以通过npm link的方式模拟这个软链接，步骤如下：
+   - 创建packages/create-quick-ui-app-cli目录
+   - pnpm init初始化项目
+   - 添加bin/index.js文件，作为入口文件，`#!/usr/bin/env node`用来声明解释器类型，因为index.js并不是通过`node xxx`命令执行，而是通过shell脚本去执行，而js代码是不能直接以这种形式执行，所以需要声明解释器类型，意思是执行该代码需要node作为解释器辅助
+
+     ```js
+     #!/usr/bin/env node
+     console.log('create-quick-ui ....')
+     ```
+
+   - 修改package.json，添加bin属性，声明注册一个叫`create-quick-ui`的可执行文件
+
+     ```json
+      {
+        "name": "create-quick-ui-app-cli",
+        "version": "1.0.0",
+        "description": "",
+        "main": "index.js",
+        "type": "module",
+        "bin": {
+          "create-quick-ui": "./bin/index.js"
+        },
+        "scripts": {
+          "test": "echo \"Error: no test specified\" && exit 1"
+        },
+        "keywords": [],
+        "author": "",
+        "license": "ISC"
+      }
+
+     ```
+
+   - 并将type设置为module，表示可以在node环境中使用esm模式规范
+   - npm link链接到全局
+   - 在任何地方输入命令`create-quick-ui`，日志都会输出
+
+#### 创建命令行界面
+
+1. 打印一个欢迎页面
+
+   - [Clear](https://github.com/bahamas10/node-clear) 清除屏幕
+   - [Figlet](https://github.com/patorjk/figlet.js) 提供炫酷文字效果
+   - [Chalk-animation](https://github.com/bokub/chalk-animation) 提供命令行动画与渐变颜色
+
+   ```bash
+   pnpm i figlet clear chalk-animation
+   ```
+
+   修改index.js，控制台输入`create-quick-UI`
+   ![quickUI.jpg](./images/quickUI.jpg)
+
+2. 创建命令行选项
+   - [Inquirer](https://github.com/SBoudrias/Inquirer.js) 根据配置显示界面并将结果返回为json
+   - [chalk](https://github.com/chalk/chalk) 正确的终端字符串样式
+
+3. 克隆项目模板
+   一般的cli脚手架都是从github克隆代码，并有少量代码需要更改<br />
+   - [download-git-repo](https://gitlab.com/flippidippi/download-git-repo) 克隆github代码
+   - [ora](https://github.com/sindresorhus/ora) 提供终端进度条
+ 
+   ```bash
+   pnpm i ora download-git-repo
+   ```
+
+   创建lib/utils/clone.js，克隆代码的公共部分<br />
+   创建operations/quick-ui-vite.js，实现克隆quick-ui-vite过程 <br /> 
+
+4. 模板生成代码
+   除了克隆模板库代码，有些需要自动生成，比如动态生成项目名称等，使用handlebars库
+   1. 在[quick-ui-app-js-template](https://github.com/wang1xiang/quick-ui-app-js-template.git)中添加template/package.hbs.json文件
+   2. 在quick-ui-vite.js中通过js修改package文件
+5. 上传npm仓库
